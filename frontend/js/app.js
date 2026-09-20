@@ -347,8 +347,10 @@ function displayAnalysisResults(analysis) {
     const hasLiability = analysis.liability_terms && (analysis.liability_terms.liability_cap || analysis.liability_terms.indemnification);
     const hasDispute = analysis.dispute_resolution && analysis.dispute_resolution.method;
     const hasObligations = analysis.obligations && analysis.obligations.length > 0;
+    const hasInconsistencies = analysis.inconsistencies && analysis.inconsistencies.length > 0;
 
     resultsContainer.innerHTML = `
+        ${renderPlainLanguageSummary(analysis)}
         ${renderNextStepsSummary(analysis)}
         ${renderTrustBanner(analysis)}
         ${renderDocumentOverview(analysis)}
@@ -356,6 +358,7 @@ function displayAnalysisResults(analysis) {
         ${renderParties(analysis.parties)}
         ${hasObligations ? renderObligations(analysis.obligations) : ''}
         ${renderImportantClauses(analysis.important_clauses)}
+        ${hasInconsistencies ? renderInconsistencies(analysis.inconsistencies) : ''}
         ${renderRisks(analysis.risks)}
         ${renderMissingInfo(analysis.missing_information)}
         ${hasFinancial ? renderFinancialTerms(analysis.financial_terms) : ''}
@@ -867,6 +870,52 @@ function toggleChecklistItem(element) {
     } else {
         element.innerHTML = '';
     }
+}
+
+function renderPlainLanguageSummary(analysis) {
+    const plain = analysis.plain_language_summary;
+    if (!plain) return '';
+    return `
+        <div class="analysis-section">
+            <h3 class="analysis-section-title">
+                <span class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
+                Summary in Plain Language
+            </h3>
+            <div class="card">
+                <div class="card-body">
+                    <p style="font-size: 1.05rem; line-height: 1.8; color: var(--text-primary);">${escapeHtml(plain)}</p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderInconsistencies(inconsistencies) {
+    if (!inconsistencies || inconsistencies.length === 0) return '';
+    return `
+        <div class="analysis-section">
+            <h3 class="analysis-section-title">
+                <span class="icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+                Inconsistencies Detected
+                <span class="trust-indicator">Review these carefully</span>
+            </h3>
+            <div class="card">
+                <div class="card-body">
+                    ${inconsistencies.map(inc => `
+                        <div style="padding: 1rem; margin-bottom: 1rem; border-left: 3px solid var(--${inc.severity === 'HIGH' ? 'danger' : inc.severity === 'MEDIUM' ? 'warning' : 'info'}, #ef4444); background: var(--${inc.severity === 'HIGH' ? 'danger' : inc.severity === 'MEDIUM' ? 'warning' : 'info'}-bg, #fef2f2); border-radius: 0 0.5rem 0.5rem 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <strong>${escapeHtml(inc.description)}</strong>
+                                <span class="badge badge-${inc.severity === 'HIGH' ? 'danger' : inc.severity === 'MEDIUM' ? 'warning' : 'neutral'}">${escapeHtml(inc.severity || 'LOW')}</span>
+                            </div>
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                                ${escapeHtml(inc.explanation || '')}
+                            </p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function renderNextStepsSummary(analysis) {
