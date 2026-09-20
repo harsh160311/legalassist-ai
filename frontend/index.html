@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalAssist AI - Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="container">
+                <a href="/" class="nav-brand">
+                    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="8" fill="#3b82f6"/>
+                        <path d="M8 10h16v2H8V10zm0 4h16v2H8v-2zm0 4h10v2H8v-2z" fill="white"/>
+                    </svg>
+                    LegalAssist AI
+                </a>
+                <button class="nav-mobile-toggle" aria-label="Toggle navigation">
+                    <span class="icon icon-sm"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>
+                </button>
+                <ul class="nav-links">
+                    <li><a href="/" class="active">Dashboard</a></li>
+                    <li><a href="/analyze">Analyze</a></li>
+                    <li><a href="/compare">Compare</a></li>
+                    <li><a href="/chat">Ask Questions</a></li>
+                    <li><a href="/legal-info">Legal Info</a></li>
+                    <li><a href="/about">About</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <!-- Disclaimer -->
+                <div class="disclaimer">
+                    <div class="disclaimer-title">
+                        <span class="icon icon-sm"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span> Legal Disclaimer
+                    </div>
+                    <p class="disclaimer-text">
+                        This platform provides legal information and document assistance for informational purposes only. 
+                        It does not provide legal advice and does not replace a qualified legal professional.
+                    </p>
+                </div>
+
+                <!-- Privacy Notice -->
+                <div class="alert alert-info mb-3">
+                    <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+                    <span><strong>Privacy:</strong> Uploaded documents are automatically deleted after 10 minutes. Your data is not stored permanently.</span>
+                </div>
+
+                <!-- Welcome Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h1 style="margin-bottom: 0.5rem;">Welcome to LegalAssist AI</h1>
+                        <p style="font-size: 1.1rem; margin-bottom: 0;">
+                            Your AI-powered legal document assistant. Upload documents, get instant analysis, 
+                            compare contracts, and get answers to your legal questions.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-icon blue"><span class="icon icon-lg"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></span></div>
+                        <div class="stat-card-value" id="docs-count">0</div>
+                        <div class="stat-card-label">Documents Analyzed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon green"><span class="icon icon-lg"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span></div>
+                        <div class="stat-card-value">AI</div>
+                        <div class="stat-card-label">Powered Analysis</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon orange"><span class="icon icon-lg"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span></div>
+                        <div class="stat-card-value" id="gemini-status">Checking...</div>
+                        <div class="stat-card-label">Gemini API Status</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon red"><span class="icon icon-lg"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span></div>
+                        <div class="stat-card-value">Safe</div>
+                        <div class="stat-card-label">Prompt Injection Protected</div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <h2 class="section-title mb-3">Quick Actions</h2>
+                <div class="stats-grid">
+                    <a href="/analyze" class="card" style="text-decoration: none; cursor: pointer;">
+                        <div class="card-body text-center">
+                            <div style="margin-bottom: 1rem; color: var(--secondary-color);"><span class="icon icon-xl"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></span></div>
+                            <h3 style="margin-bottom: 0.5rem;">Upload & Analyze</h3>
+                            <p style="margin: 0; color: var(--text-muted);">Upload a legal document for instant AI analysis</p>
+                        </div>
+                    </a>
+                    <a href="/compare" class="card" style="text-decoration: none; cursor: pointer;">
+                        <div class="card-body text-center">
+                            <div style="margin-bottom: 1rem; color: var(--accent-color);"><span class="icon icon-xl"><svg viewBox="0 0 24 24"><path d="M16 3h5v5M8 3H3v5M3 16v5h5M21 16v5h-5"/><line x1="3" y1="12" x2="21" y2="12"/></svg></span></div>
+                            <h3 style="margin-bottom: 0.5rem;">Compare Documents</h3>
+                            <p style="margin: 0; color: var(--text-muted);">Compare two legal documents side by side</p>
+                        </div>
+                    </a>
+                    <a href="/chat" class="card" style="text-decoration: none; cursor: pointer;">
+                        <div class="card-body text-center">
+                            <div style="margin-bottom: 1rem; color: var(--success-color);"><span class="icon icon-xl"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span></div>
+                            <h3 style="margin-bottom: 0.5rem;">Ask Questions</h3>
+                            <p style="margin: 0; color: var(--text-muted);">Get answers about your uploaded documents</p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Features -->
+                <h2 class="section-title mb-3 mt-4">Features</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                            <div style="display: flex; gap: 1rem;">
+                                <span class="icon icon-lg" style="color: var(--secondary-color); flex-shrink: 0;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></span>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">Document Analysis</h4>
+                                    <p style="margin: 0; font-size: 0.9rem;">Get structured analysis including summary, parties, obligations, risks, and more.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <span class="icon icon-lg" style="color: var(--warning-color); flex-shrink: 0;"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">Risk Detection</h4>
+                                    <p style="margin: 0; font-size: 0.9rem;">Identify potential risks with severity levels and suggested actions.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <span class="icon icon-lg" style="color: var(--accent-color); flex-shrink: 0;"><svg viewBox="0 0 24 24"><path d="M16 3h5v5M8 3H3v5M3 16v5h5M21 16v5h-5"/><line x1="3" y1="12" x2="21" y2="12"/></svg></span>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">Document Comparison</h4>
+                                    <p style="margin: 0; font-size: 0.9rem;">Compare two documents to find changes, additions, and removals.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <span class="icon icon-lg" style="color: var(--success-color); flex-shrink: 0;"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">AI Q&A</h4>
+                                    <p style="margin: 0; font-size: 0.9rem;">Ask questions and get answers based only on your document content.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <span class="icon icon-lg" style="color: var(--info-color); flex-shrink: 0;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">Clause Explanation</h4>
+                                    <p style="margin: 0; font-size: 0.9rem;">Understand complex legal clauses in simple language.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <span class="icon icon-lg" style="color: var(--success-color); flex-shrink: 0;"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">Action Checklist</h4>
+                                    <p style="margin: 0; font-size: 0.9rem;">Get actionable tasks with priorities and deadlines.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-text">
+                        © 2026 LegalAssist AI. For informational purposes only.
+                    </div>
+                    <div class="footer-links">
+                        <a href="/about">About</a>
+                        <a href="/legal-info">Legal Info</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/js/icons.js"></script>
+    <script src="/js/app.js?v=2"></script>
+</body>
+</html>
