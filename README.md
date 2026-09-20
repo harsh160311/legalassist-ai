@@ -1,30 +1,130 @@
-# LegalAssist AI
+﻿# LegalAssist AI
 
 **AI-Powered Legal Document Analysis & Assistance Platform**
 
 ---
 
-## Overview
+## Chosen Vertical
 
-LegalAssist AI is a full-stack web application that uses Google Gemini AI to help users understand, analyze, and compare legal documents. It extracts key facts, identifies risks, and provides actionable insights — making legal information accessible to everyone.
+**AI for Legal Assistance & Access**
 
-> **Note:** This platform provides information and assistance, not professional legal advice.
+LegalAssist AI is built under the **Legal Assistance & Access** vertical. The platform focuses on making legal information accessible, understandable, and actionable for everyone - regardless of legal expertise.
+
+### Target Users
+
+- Individuals reviewing contracts or agreements
+- Small business owners without legal teams
+- Students learning about legal documents
+- Anyone who needs to understand legal documents quickly
+
+### Problem We Solve
+
+Legal documents are complex, full of jargon, and often misunderstood. Most people sign contracts without fully understanding the terms, risks, or obligations. LegalAssist AI bridges this gap by providing instant, AI-powered analysis that breaks down complex legal language into plain English.
 
 ---
 
-## Features
+## Approach and Logic
 
-| Feature | Description |
-|---|---|
-| Two-Stage AI Analysis | Stage 1 extracts facts, Stage 2 generates legal analysis |
-| Document Type Detection | Automatically identifies contracts, tax forms, NDAs, etc. |
-| Sensitive Data Masking | Auto-detects and masks Aadhaar, PAN, SSN, passport, tax IDs |
-| Fact vs Inference | Clearly separates document facts from AI interpretations |
-| Document Q&A | Ask questions, get answers from document content only |
-| Clause Explanation | Paste any clause for plain-language explanation |
-| Document Comparison | Compare two documents for changes, additions, removals |
-| PDF Form Field Extraction | Extracts fillable form field values (AcroForm) |
-| Prompt Injection Protection | Detects and blocks injection attempts |
+The platform follows a structured approach to legal document analysis:
+
+```
+User Uploads Document
+        |
+Text Extraction (PDF/DOCX/TXT + AcroForm fields)
+        |
+Two-Stage AI Analysis
+   |--- Stage 1: Fact Extraction (structured data)
+   |--- Stage 2: Legal Analysis (risks, obligations, recommendations)
+        |
+Post-Processing (sensitive data masking, trust indicators)
+        |
+Frontend Rendering (interactive dashboard)
+```
+
+### Core Logic
+
+1. **Document Ingestion** - Accept PDF, DOCX, or TXT files. Extract text including fillable form fields (AcroForm).
+
+2. **Two-Stage AI Pipeline** - Instead of asking AI to do everything at once, we split the work:
+   - **Stage 1 (Fact Extraction):** Extract structured facts - parties, dates, amounts, addresses, tax identifiers, jurisdiction. This gives us clean, verifiable data.
+   - **Stage 2 (Legal Analysis):** Use the extracted facts + original text to generate legal analysis - summary, risks, obligations, missing information, action checklist, and questions for a lawyer.
+
+3. **Safety Layer** - Apply prompt injection protection, sensitive data masking, and trust indicators to ensure responsible AI usage.
+
+4. **Interactive Features** - Enable users to ask follow-up questions, explain individual clauses, and compare multiple documents.
+
+---
+
+## How the Solution Works
+
+### Step 1: User Uploads a Document
+
+Users drag-and-drop or click to upload a legal document (PDF, DOCX, or TXT). The system validates file type and size (max 10MB).
+
+### Step 2: Text Extraction
+
+The backend extracts text from the document:
+- **PDF:** PyPDF2 extracts text + AcroForm field values (filled-in form data)
+- **DOCX:** python-docx extracts paragraph text
+- **TXT:** Direct text read with encoding fallback
+
+### Step 3: Two-Stage AI Analysis
+
+**Stage 1 - Fact Extraction:**
+
+The AI extracts structured facts from the document:
+- Identification details (parties, document type)
+- Tax identifiers (PAN, Aadhaar, SSN, etc.)
+- Financial amounts and payment terms
+- Key dates and deadlines
+- Addresses and jurisdiction
+- Treaty information (for international documents)
+
+**Stage 2 - Legal Analysis:**
+
+Using the extracted facts, the AI generates:
+- Document summary and type classification
+- Involved parties and their obligations
+- Important clauses with significance
+- Potential concerns and risks (with severity levels)
+- Missing/unclear information
+- Action checklist with priorities
+- Questions to ask a lawyer
+
+### Step 4: Post-Processing
+
+Before displaying results:
+- Sensitive data (Aadhaar, PAN, SSN, etc.) is masked
+- Trust indicators are injected (document fact vs. AI interpretation)
+- JSON response is validated and cleaned
+
+### Step 5: Interactive Features
+
+- **Document Q&A:** Ask any question about the uploaded document
+- **Clause Explanation:** Paste any clause for plain-language explanation
+- **Document Comparison:** Compare two documents side-by-side
+
+### Step 6: Auto-Cleanup
+
+Uploaded documents are automatically deleted after 10 minutes - no permanent storage, no privacy risk.
+
+---
+
+## Assumptions Made
+
+1. **User-provided documents are in readable format** - The system assumes uploaded PDFs have extractable text (not scanned images).
+
+2. **API key is available** - The system requires a Google Gemini API key. Users can generate one for free from Google AI Studio.
+
+3. **Internet access required** - AI analysis requires an active internet connection to reach the Gemini API.
+
+4. **English-language documents** - The AI analysis is optimized for English legal documents. Other languages may produce less accurate results.
+
+5. **Awareness, not certification** - Analysis results are for informational purposes only and do not constitute legal advice or certified legal opinions.
+
+6. **Ephemeral storage** - Documents are stored in-memory and auto-deleted after 10 minutes. Server restarts clear all data.
+
+7. **Single-user MVP** - This is an MVP version without user authentication. All uploaded documents are accessible to anyone with the URL during the session.
 
 ---
 
@@ -34,301 +134,180 @@ LegalAssist AI is a full-stack web application that uses Google Gemini AI to hel
 |---|---|
 | Backend | Python 3.13, FastAPI |
 | Frontend | HTML5, CSS3, Vanilla JavaScript |
-| AI Engine | Google Gemini API (`gemini-1.5-flash`) |
+| AI Engine | Google Gemini API (gemini-1.5-flash) |
 | PDF Processing | PyPDF2 (text + AcroForm fields) |
 | DOCX Processing | python-docx |
+| Validation | Pydantic |
 | Environment | python-dotenv |
+| Testing | pytest |
 
 ---
 
-## Getting Started
+## Evaluation Focus Areas
 
-### Prerequisites
+### Code Quality
 
-- Python 3.10 or higher
-- A Google Gemini API key (free to generate)
+| Implementation | Details |
+|---|---|
+| Modular Architecture | Backend split into routes/, services/, models/, utils/ |
+| Python Typing | Pydantic models for all request/response schemas |
+| Separation of Concerns | Routes delegate to services, services handle business logic |
+| Configuration | Externalized to .env + config.py |
+| Docstrings | Present on all classes, methods, and route handlers |
+| Logging | Structured logging with named logger across all modules |
 
-### Generate Your Gemini API Key
+### Security
 
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click **"Create API Key"**
-4. Copy the generated key
+| Implementation | Details |
+|---|---|
+| XSS Prevention | `escapeHtml()` function sanitizes all innerHTML injections |
+| CORS Lockdown | Restricted to localhost:8000 only (was wildcard) |
+| Rate Limiting | 30 requests per minute per IP, returns 429 |
+| Security Headers | X-Content-Type-Options, X-Frame-Options, CSP, Referrer-Policy |
+| Prompt Injection Protection | 16 regex patterns detect and block injection attempts |
+| Sensitive Data Masking | Auto-masks Aadhaar, PAN, SSN, passport, email, phone |
+| API Key Security | Loaded from .env, never exposed to frontend |
+| File Validation | Server-side extension whitelist + size limit |
+| Auto-Cleanup | Documents deleted after 10 minutes |
+| UNTRUSTED DATA | All AI prompts instruct model to treat documents as untrusted |
 
-> **Important:** Never share your API key publicly or commit it to version control.
+### Efficiency
 
-### Installation
+| Implementation | Details |
+|---|---|
+| Async FastAPI | All route handlers are async def |
+| Async File I/O | Sync file operations wrapped in asyncio.to_thread |
+| Document Truncation | Limits text sent to AI (100K chars max) |
+| Background Cleanup | Non-blocking asyncio task for expired documents |
+| Lazy AI Init | GeminiService created on first use (singleton pattern) |
+| No-Cache Headers | Fresh content on every page load |
+| JSON Robust Parsing | Handles markdown fences, common escape issues |
 
+### Testing
+
+| Implementation | Details |
+|---|---|
+| 15 pytest tests | All passing |
+| Health endpoints | Health check, API status |
+| Page serving | All 6 frontend pages |
+| Document upload | Valid files, invalid type rejection |
+| Document retrieval | Get, delete, 404 handling |
+| Security headers | Verify all headers present |
+| CORS validation | Verify wildcard is not used |
+
+Run tests:
 ```bash
-# 1. Clone the repository
-git clone <repository-url>
-cd legalassist-ai
-
-# 2. Create a virtual environment
-python -m venv venv
-
-# 3. Activate the virtual environment
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-
-# 4. Install dependencies
-pip install -r requirements.txt
-
-# 5. Set up environment variables
-cp .env.example .env
+pytest -v
 ```
 
-### Configure Your API Key
+### Accessibility
 
-Open `.env` and replace the placeholder with your actual Gemini API key:
-
-```env
-GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-1.5-flash
-```
-
-### Run the Application
-
-```bash
-python run.py
-```
-
-Open your browser and navigate to: **http://localhost:8000**
+| Implementation | Details |
+|---|---|
+| Skip-to-content link | Keyboard users can skip navigation |
+| ARIA landmarks | role="main", role="contentinfo", aria-label on nav |
+| Keyboard navigation | Nav toggle, checklist items, suggested questions |
+| prefers-reduced-motion | Animations disabled when user prefers |
+| Focus-visible indicators | Clear outline on keyboard focus |
+| Semantic HTML | Proper heading hierarchy, nav, main, footer |
+| Responsive design | Mobile-first with breakpoints at 600px, 768px, 900px |
+| Form labels | Associated labels on all form inputs |
 
 ---
 
-## Environment Variables
+## How the Work is Evaluated
 
-| Variable | Description | Default |
-|---|---|---|
-| `GEMINI_API_KEY` | Your Google Gemini API key | **Required** |
-| `GEMINI_MODEL` | Gemini model to use | `gemini-1.5-flash` |
-| `APP_NAME` | Application name | `LegalAssist AI` |
-| `APP_VERSION` | Application version | `1.0.0` |
-| `DEBUG` | Enable debug mode | `true` |
-| `HOST` | Server host | `0.0.0.0` |
-| `PORT` | Server port | `8000` |
-| `MAX_FILE_SIZE_MB` | Max upload size | `10` |
-| `AUTO_DELETE_MINUTES` | Auto-delete uploaded files | `10` |
+### High Impact (Most Important)
 
----
+| Criteria | Our Implementation |
+|---|---|
+| **Code Quality** | Modular FastAPI backend with clean separation of services, routes, models, utils. Pydantic validation. Structured logging. |
+| **Security** | XSS sanitization, CORS lockdown, rate limiting, prompt injection protection, sensitive data masking, CSP headers, auto-cleanup. |
+| **Testing** | 15 automated pytest tests covering health, pages, uploads, retrieval, security headers, and CORS. |
 
-## Project Structure
+### Medium Impact (Under the Surface)
 
-```
-legalassist-ai/
-├── backend/
-│   ├── main.py                    # FastAPI application, routing, static files
-│   ├── config.py                  # Environment configuration
-│   ├── routes/
-│   │   ├── documents.py           # Document upload, analysis, retrieval
-│   │   ├── chat.py                # Q&A and clause explanation
-│   │   └── compare.py             # Document comparison
-│   ├── services/
-│   │   ├── document_extractor.py  # PDF/DOCX/TXT + AcroForm extraction
-│   │   └── gemini_service.py      # Two-stage AI analysis + safety
-│   ├── models/
-│   │   └── schemas.py             # Pydantic request/response models
-│   └── utils/
-│       └── document_store.py      # In-memory document storage
-├── frontend/
-│   ├── index.html                 # Dashboard
-│   ├── analyze.html               # Upload & analyze documents
-│   ├── compare.html               # Compare two documents
-│   ├── chat.html                  # Ask questions about documents
-│   ├── legal-info.html            # General legal information
-│   ├── about.html                 # About page + disclaimer
-│   ├── css/
-│   │   └── styles.css             # Professional legal design system
-│   └── js/
-│       └── app.js                 # Frontend logic, rendering, state
-├── uploads/                       # Uploaded document storage
-├── .env.example                   # Environment template
-├── .gitignore
-├── requirements.txt               # Python dependencies
-├── run.py                         # Application entry point
-└── README.md
-```
+| Criteria | Our Implementation |
+|---|---|
+| **Efficiency** | Async handlers, asyncio.to_thread for sync I/O, document truncation, background cleanup, lazy initialization. |
+| **Problem Alignment** | Two-stage AI pipeline for accurate legal analysis. Fact extraction + legal analysis separation. Trust indicators. |
 
----
+### Low Impact (Final Polish)
 
-## AI Analysis Pipeline
-
-```
-Upload Document
-      │
-      ▼
-┌─────────────────────┐
-│  Text Extraction     │  PyPDF2 + AcroForm fields
-│  (PDF/DOCX/TXT)     │  → Merges labels + form values
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│  STAGE 1:            │  Gemini API call
-│  Fact Extraction     │  → identification_details
-│                     │  → tax_identifiers
-│                     │  → treaty_information
-│                     │  → amounts, dates, addresses
-│                     │  → jurisdiction
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│  STAGE 2:            │  Gemini API call
-│  Legal Analysis      │  Uses extracted facts + original text
-│                     │  → summary, parties, clauses
-│                     │  → risks, missing_information
-│                     │  → action_checklist
-│                     │  → lawyer_questions
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│  Post-Processing     │  Sensitive data masking
-│                     │  JSON validation
-│                     │  Trust indicator injection
-└─────────┬───────────┘
-          │
-          ▼
-    Frontend Render
-```
+| Criteria | Our Implementation |
+|---|---|
+| **Accessibility** | Skip links, ARIA landmarks, keyboard navigation, prefers-reduced-motion, focus-visible, responsive design. |
+| **Documentation** | Comprehensive README with vertical, approach, evaluation alignment, troubleshooting. |
 
 ---
 
 ## API Endpoints
 
 ### Documents
+
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/documents/upload` | Upload a document (PDF/DOCX/TXT) |
-| POST | `/api/documents/{id}/analyze` | Run two-stage AI analysis |
-| GET | `/api/documents/{id}` | Get document info |
-| GET | `/api/documents/{id}/text` | Get extracted text |
-| GET | `/api/documents/{id}/analysis` | Get stored analysis |
-| DELETE | `/api/documents/{id}` | Delete a document |
+| POST | /api/documents/upload | Upload a document (PDF/DOCX/TXT) |
+| POST | /api/documents/{id}/analyze | Run two-stage AI analysis |
+| GET | /api/documents/{id} | Get document info |
+| GET | /api/documents/{id}/text | Get extracted text |
+| GET | /api/documents/{id}/analysis | Get stored analysis |
+| DELETE | /api/documents/{id} | Delete a document |
 
 ### Chat
+
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/chat/ask` | Ask a question about a document |
-| POST | `/api/chat/explain-clause` | Explain a legal clause |
+| POST | /api/chat/ask | Ask a question about a document |
+| POST | /api/chat/explain-clause | Explain a legal clause |
 
 ### Compare
+
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/compare/` | Compare two documents |
-| GET | `/api/compare/documents` | List available documents |
+| POST | /api/compare/ | Compare two documents |
+| GET | /api/compare/documents | List available documents |
 
 ### System
+
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/health` | Health check |
-| GET | `/api/status` | API status with config info |
+| GET | /api/health | Health check |
+| GET | /api/status | API status with config info |
 
 ---
 
-## Safety Features
-
-### Security Headers
-- `X-Content-Type-Options: nosniff`
-- `X-Frame-Options: DENY`
-- `X-XSS-Protection: 1; mode=block`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `Content-Security-Policy` with restricted sources
-
-### CORS
-- Locked to `localhost:8000` and `127.0.0.1:8000` only
-- Only `GET`, `POST`, `DELETE` methods allowed
-- Only `Content-Type` header accepted
-
-### Rate Limiting
-- 30 requests per minute per IP
-- Returns `429 Too Many Requests` when exceeded
-
-### XSS Prevention
-- All dynamic content escaped with `escapeHtml()` before DOM insertion
-- User input and API responses sanitized
-
-### Prompt Injection Protection
-
-The system detects and blocks:
-- "Ignore previous instructions"
-- "Reveal system prompt" / "Reveal API key"
-- "You are now..." / "New instructions:"
-- Jailbreak and override attempts
-
-### Data Handling
-
-- Documents treated as **UNTRUSTED DATA**
-- API key never exposed to frontend
-- Sensitive identifiers masked in UI
-- No full sensitive data in logs
-- Documents auto-deleted after 10 minutes
-
----
-
-## Testing
+## Installation
 
 ```bash
-# Run all tests
-pytest
+# Clone repository
+git clone https://github.com/harsh160311/legalassist-ai.git
+cd legalassist-ai
 
-# Run with verbose output
-pytest -v
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/Mac
 
-# Run specific test class
-pytest tests/test_app.py::TestHealthEndpoints -v
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment
+cp .env.example .env
+# Edit .env and add your Gemini API key
+
+# Run
+python run.py
 ```
 
-### Test Coverage
-- Health and status endpoints
-- Page serving (all 6 pages)
-- Document upload (valid + invalid types)
-- Document retrieval and deletion
-- Security headers verification
-- CORS configuration validation
+Open: **http://localhost:8000**
 
----
+### Get Your API Key
 
-## Accessibility
-
-- Skip-to-content link for keyboard navigation
-- ARIA landmarks (`role="main"`, `role="contentinfo"`, `aria-label`)
-- Keyboard-navigable mobile toggle and interactive elements
-- `prefers-reduced-motion` support
-- Focus-visible indicators
-- Semantic HTML structure
-- Responsive design with mobile breakpoints
-
----
-
-## Supported Document Types
-
-- Contracts and Agreements
-- Employment Agreements
-- Rental/Lease Agreements
-- Non-Disclosure Agreements (NDA)
-- Tax Forms (W-8BEN, W-9, etc.)
-- Terms of Service / Privacy Policies
-- Digital Signature Records
-- Government Forms
-- Any PDF, DOCX, or TXT file
-
----
-
-## Troubleshooting
-
-| Issue | Solution |
-|---|---|
-| `GEMINI_API_KEY` not set | Make sure `.env` file exists with your API key |
-| Port 8000 in use | Change `PORT` in `.env` to another value |
-| Upload fails | Check `MAX_FILE_SIZE_MB` in `.env` |
-| Module not found | Ensure virtual environment is activated |
-| AI analysis fails | Verify your Gemini API key is valid at [AI Studio](https://makersuite.google.com/app/apikey) |
+1. Go to https://makersuite.google.com/app/apikey
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy the key into your `.env` file
 
 ---
 
