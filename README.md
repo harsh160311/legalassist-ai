@@ -233,6 +233,26 @@ Upload Document
 
 ## Safety Features
 
+### Security Headers
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Content-Security-Policy` with restricted sources
+
+### CORS
+- Locked to `localhost:8000` and `127.0.0.1:8000` only
+- Only `GET`, `POST`, `DELETE` methods allowed
+- Only `Content-Type` header accepted
+
+### Rate Limiting
+- 30 requests per minute per IP
+- Returns `429 Too Many Requests` when exceeded
+
+### XSS Prevention
+- All dynamic content escaped with `escapeHtml()` before DOM insertion
+- User input and API responses sanitized
+
 ### Prompt Injection Protection
 
 The system detects and blocks:
@@ -247,6 +267,42 @@ The system detects and blocks:
 - API key never exposed to frontend
 - Sensitive identifiers masked in UI
 - No full sensitive data in logs
+- Documents auto-deleted after 10 minutes
+
+---
+
+## Testing
+
+```bash
+# Run all tests
+pytest
+
+# Run with verbose output
+pytest -v
+
+# Run specific test class
+pytest tests/test_app.py::TestHealthEndpoints -v
+```
+
+### Test Coverage
+- Health and status endpoints
+- Page serving (all 6 pages)
+- Document upload (valid + invalid types)
+- Document retrieval and deletion
+- Security headers verification
+- CORS configuration validation
+
+---
+
+## Accessibility
+
+- Skip-to-content link for keyboard navigation
+- ARIA landmarks (`role="main"`, `role="contentinfo"`, `aria-label`)
+- Keyboard-navigable mobile toggle and interactive elements
+- `prefers-reduced-motion` support
+- Focus-visible indicators
+- Semantic HTML structure
+- Responsive design with mobile breakpoints
 
 ---
 

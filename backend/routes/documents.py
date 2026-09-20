@@ -3,6 +3,7 @@ Document upload and analysis routes.
 """
 
 import os
+import asyncio
 import logging
 from datetime import datetime
 from fastapi import APIRouter, UploadFile, File, HTTPException
@@ -29,6 +30,11 @@ def get_ai_service() -> GeminiService:
     return _ai_service
 
 
+def _write_file(file_path: Path, content: bytes):
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+
 @router.post("/upload", response_model=DocumentUploadResponse)
 async def upload_document(file: UploadFile = File(...)):
     file_ext = Path(file.filename).suffix.lower()
@@ -50,8 +56,7 @@ async def upload_document(file: UploadFile = File(...)):
     file_path = UPLOAD_DIR / safe_filename
 
     try:
-        with open(file_path, "wb") as f:
-            f.write(content)
+        await asyncio.to_thread(_write_file, file_path, content)
     except Exception as e:
         logger.error("Failed to save file: %s", e)
         raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
@@ -66,7 +71,7 @@ async def upload_document(file: UploadFile = File(...)):
     logger.info("Upload: id=%s file=%s type=%s size=%d", document_id, file.filename, file_ext, len(content))
 
     try:
-        extraction_result = DocumentExtractor.extract_text(str(file_path))
+        extraction_result = await asyncio.to_thread(DocumentExtractor.extract_text, str(file_path))
         text_len = len(extraction_result["text"])
         logger.info("Extraction: id=%s text_length=%d pages=%d", document_id, text_len, len(extraction_result["pages"]))
 
@@ -225,7 +230,7 @@ async def delete_document(document_id: str):
 
     file_path = document.get("file_path")
     if file_path and os.path.exists(file_path):
-        os.remove(file_path)
+        await asyncio.to_thread(os.remove, file_path)
 
     document_store.delete_document(document_id)
     return {"success": True, "message": "Document deleted"}

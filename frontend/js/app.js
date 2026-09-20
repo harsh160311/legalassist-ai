@@ -6,6 +6,13 @@
 // API Base URL
 const API_BASE = '';
 
+// HTML Escaping for XSS Prevention
+function escapeHtml(str) {
+    if (str == null) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' };
+    return String(str).replace(/[&<>"']/g, c => map[c]);
+}
+
 // State Management
 const state = {
     currentDocument: null,
@@ -145,6 +152,12 @@ function initNavigation() {
         toggle.addEventListener('click', () => {
             links.classList.toggle('active');
         });
+        toggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                links.classList.toggle('active');
+            }
+        });
     }
     
     // Set active link based on current path
@@ -267,8 +280,8 @@ function updateFileInfo(result) {
             <div class="file-info">
                 <div class="file-icon">${getFileIcon(result.file_type)}</div>
                 <div class="file-details">
-                    <div class="file-name">${result.filename}</div>
-                    <div class="file-meta">${formatFileSize(result.file_size)} • ${result.file_type.toUpperCase()}</div>
+                    <div class="file-name">${escapeHtml(result.filename)}</div>
+                    <div class="file-meta">${formatFileSize(result.file_size)} • ${escapeHtml(result.file_type.toUpperCase())}</div>
                 </div>
                 <span class="badge badge-success">Uploaded</span>
             </div>
@@ -384,15 +397,15 @@ function renderDocumentOverview(analysis) {
             <div class="analysis-section">
                 <h3 class="analysis-section-title"><span class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span> Document Overview</h3>
                 <div class="card"><div class="card-body">
-                    <div class="badge badge-info mb-2">${analysis.document_type || 'Legal Document'}</div>
-                    <p style="white-space: pre-line;">${analysis.summary || 'No summary available.'}</p>
+                    <div class="badge badge-info mb-2">${escapeHtml(analysis.document_type || 'Legal Document')}</div>
+                    <p style="white-space: pre-line;">${escapeHtml(analysis.summary || 'No summary available.')}</p>
                 </div></div>
             </div>
         `;
     }
 
-    const parties = (overview.key_authorities || []).map(a => `<span class="badge badge-neutral">${a}</span>`).join(' ');
-    const dates = (overview.key_dates || []).join(', ');
+    const parties = (overview.key_authorities || []).map(a => `<span class="badge badge-neutral">${escapeHtml(a)}</span>`).join(' ');
+    const dates = escapeHtml((overview.key_dates || []).join(', '));
 
     return `
         <div class="analysis-section">
@@ -402,16 +415,16 @@ function renderDocumentOverview(analysis) {
                     <div class="overview-grid">
                         <div class="overview-row">
                             <div class="overview-label">Document Type</div>
-                            <div class="overview-value"><span class="badge badge-info">${overview.type || analysis.document_type || 'Unknown'}</span></div>
+                            <div class="overview-value"><span class="badge badge-info">${escapeHtml(overview.type || analysis.document_type || 'Unknown')}</span></div>
                         </div>
                         <div class="overview-row">
                             <div class="overview-label">Purpose</div>
-                            <div class="overview-value">${overview.purpose || 'Not determined'}</div>
+                            <div class="overview-value">${escapeHtml(overview.purpose || 'Not determined')}</div>
                         </div>
                         ${overview.key_subject ? `
                         <div class="overview-row">
                             <div class="overview-label">Key Subject</div>
-                            <div class="overview-value">${overview.key_subject}</div>
+                            <div class="overview-value">${escapeHtml(overview.key_subject)}</div>
                         </div>` : ''}
                         ${parties ? `
                         <div class="overview-row">
@@ -426,7 +439,7 @@ function renderDocumentOverview(analysis) {
                     </div>
                     <div class="mt-3">
                         <strong>Summary:</strong>
-                        <p style="white-space: pre-line; margin-top: 0.5rem;">${analysis.summary || 'No summary available.'}</p>
+                        <p style="white-space: pre-line; margin-top: 0.5rem;">${escapeHtml(analysis.summary || 'No summary available.')}</p>
                     </div>
                 </div>
             </div>
@@ -487,22 +500,22 @@ function renderFactGroup(title, facts) {
     const rows = facts.map(f => {
         const displayValue = f.value_display || f.value || 'Not specified';
         const source = f.source || '';
-        const page = f.page ? ` (p.${f.page})` : '';
+        const page = f.page ? ` (p.${escapeHtml(String(f.page))})` : '';
         const sensitiveTag = f.sensitive ? ' <span class="badge badge-warning" style="font-size:0.65rem;">SENSITIVE</span>' : '';
         const confidenceTag = f.confidence !== undefined && f.confidence < 0.9 ? ` <span class="text-muted" style="font-size:0.75rem;">(${Math.round(f.confidence*100)}% confidence)</span>` : '';
 
         return `
             <div class="fact-row">
-                <div class="fact-field">${f.field || 'Unknown'}${sensitiveTag}</div>
-                <div class="fact-value">${displayValue}${confidenceTag}</div>
-                <div class="fact-source">${source}${page}</div>
+                <div class="fact-field">${escapeHtml(f.field || 'Unknown')}${sensitiveTag}</div>
+                <div class="fact-value">${escapeHtml(displayValue)}${confidenceTag}</div>
+                <div class="fact-source">${escapeHtml(source)}${page}</div>
             </div>
         `;
     }).join('');
 
     return `
         <div class="fact-group">
-            <h4 class="fact-group-title">${title}</h4>
+            <h4 class="fact-group-title">${escapeHtml(title)}</h4>
             ${rows}
         </div>
     `;
@@ -521,14 +534,14 @@ function renderParties(parties) {
                     ${parties.map(party => `
                         <div class="clause-card">
                             <div class="clause-card-header">
-                                <div class="clause-card-title">${party.name}</div>
-                                <span class="badge badge-neutral">${party.role}</span>
+                                <div class="clause-card-title">${escapeHtml(party.name)}</div>
+                                <span class="badge badge-neutral">${escapeHtml(party.role)}</span>
                             </div>
                             ${party.obligations && party.obligations.length > 0 ? `
                                 <div class="clause-card-content">
                                     <strong>Key Obligations:</strong>
                                     <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
-                                        ${party.obligations.map(o => `<li>${o}</li>`).join('')}
+                                        ${party.obligations.map(o => `<li>${escapeHtml(o)}</li>`).join('')}
                                     </ul>
                                 </div>
                             ` : ''}
@@ -562,10 +575,10 @@ function renderObligations(obligations) {
                         <tbody>
                             ${obligations.map(o => `
                                 <tr>
-                                    <td><strong>${o.party || 'N/A'}</strong></td>
-                                    <td>${o.obligation || 'N/A'}</td>
-                                    <td>${o.deadline || 'Not specified'}</td>
-                                    <td>${o.consequence || 'Not specified'}</td>
+                                    <td><strong>${escapeHtml(o.party || 'N/A')}</strong></td>
+                                    <td>${escapeHtml(o.obligation || 'N/A')}</td>
+                                    <td>${escapeHtml(o.deadline || 'Not specified')}</td>
+                                    <td>${escapeHtml(o.consequence || 'Not specified')}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -587,12 +600,12 @@ function renderImportantClauses(clauses) {
             ${clauses.map(clause => `
                 <div class="clause-card">
                     <div class="clause-card-header">
-                        <div class="clause-card-title">${clause.clause_name}</div>
-                        ${clause.location ? `<span class="badge badge-neutral">${clause.location}</span>` : ''}
+                        <div class="clause-card-title">${escapeHtml(clause.clause_name)}</div>
+                        ${clause.location ? `<span class="badge badge-neutral">${escapeHtml(clause.location)}</span>` : ''}
                     </div>
                     <div class="clause-card-content">
-                        <p><strong>Summary:</strong> ${clause.summary}</p>
-                        <p><strong>Significance:</strong> ${clause.significance}</p>
+                        <p><strong>Summary:</strong> ${escapeHtml(clause.summary)}</p>
+                        <p><strong>Significance:</strong> ${escapeHtml(clause.significance)}</p>
                     </div>
                 </div>
             `).join('')}
@@ -619,17 +632,17 @@ function renderRisks(risks) {
                     <div class="risk-item-indicator ${risk.level?.toLowerCase() || 'low'}"></div>
                     <div class="risk-item-content">
                         <div class="risk-item-header">
-                            <div class="risk-item-title">${risk.title || risk.clause || 'Risk'}</div>
+                            <div class="risk-item-title">${escapeHtml(risk.title || risk.clause || 'Risk')}</div>
                             <div>
                                 ${typeLabel}
-                                <span class="risk-badge risk-${risk.level?.toLowerCase() || 'low'}">${risk.level || 'LOW'}</span>
+                                <span class="risk-badge risk-${risk.level?.toLowerCase() || 'low'}">${escapeHtml(risk.level || 'LOW')}</span>
                             </div>
                         </div>
-                        ${risk.fact ? `<div class="risk-item-description"><strong>Observation:</strong> ${risk.fact}</div>` : ''}
-                        <div class="risk-item-description">${risk.explanation || ''}</div>
-                        <div class="risk-item-description"><strong>Why it matters:</strong> ${risk.why_it_matters || ''}</div>
-                        <div class="risk-item-action"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span> Consider: ${risk.suggested_action || 'Review with a qualified professional'}</div>
-                        <div class="trust-indicator-inline">Trust: ${typeLabel} ${confidenceTag} ${risk.source ? `• Source: ${risk.source}` : ''}</div>
+                        ${risk.fact ? `<div class="risk-item-description"><strong>Observation:</strong> ${escapeHtml(risk.fact)}</div>` : ''}
+                        <div class="risk-item-description">${escapeHtml(risk.explanation || '')}</div>
+                        <div class="risk-item-description"><strong>Why it matters:</strong> ${escapeHtml(risk.why_it_matters || '')}</div>
+                        <div class="risk-item-action"><span class="icon icon-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span> Consider: ${escapeHtml(risk.suggested_action || 'Review with a qualified professional')}</div>
+                        <div class="trust-indicator-inline">Trust: ${typeLabel} ${confidenceTag} ${risk.source ? `• Source: ${escapeHtml(risk.source)}` : ''}</div>
                     </div>
                 </div>
                 `;
@@ -657,7 +670,7 @@ function renderMissingInfo(missing) {
                         <div class="mb-3">
                             <strong class="text-danger">Required / Important:</strong>
                             <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                                ${required.map(item => `<li><strong>${item.field || item}</strong>${item.reason ? ` — ${item.reason}` : ''}</li>`).join('')}
+                                ${required.map(item => `<li><strong>${escapeHtml(item.field || item)}</strong>${item.reason ? ` — ${escapeHtml(item.reason)}` : ''}</li>`).join('')}
                             </ul>
                         </div>
                     ` : ''}
@@ -665,7 +678,7 @@ function renderMissingInfo(missing) {
                         <div>
                             <strong class="text-muted">Contextual (would improve understanding):</strong>
                             <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                                ${contextual.map(item => `<li><strong>${item.field || item}</strong>${item.reason ? ` — ${item.reason}` : ''}</li>`).join('')}
+                                ${contextual.map(item => `<li><strong>${escapeHtml(item.field || item)}</strong>${item.reason ? ` — ${escapeHtml(item.reason)}` : ''}</li>`).join('')}
                             </ul>
                         </div>
                     ` : ''}
@@ -696,7 +709,7 @@ function renderFinancialTerms(terms) {
                         <div class="mb-2">
                             <strong>Payment Amounts:</strong>
                             <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                                ${terms.payment_amounts.map(p => `<li>${p}</li>`).join('')}
+                                ${terms.payment_amounts.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
                             </ul>
                         </div>
                     ` : ''}
@@ -704,7 +717,7 @@ function renderFinancialTerms(terms) {
                         <div class="mb-2">
                             <strong>Payment Schedule:</strong>
                             <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                                ${terms.payment_schedule.map(p => `<li>${p}</li>`).join('')}
+                                ${terms.payment_schedule.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
                             </ul>
                         </div>
                     ` : ''}
@@ -712,7 +725,7 @@ function renderFinancialTerms(terms) {
                         <div class="mb-2">
                             <strong>Penalties:</strong>
                             <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                                ${terms.penalties.map(p => `<li>${p}</li>`).join('')}
+                                ${terms.penalties.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
                             </ul>
                         </div>
                     ` : ''}
@@ -732,17 +745,17 @@ function renderTerminationTerms(terms) {
             </h3>
             <div class="card">
                 <div class="card-body">
-                    <p><strong>Notice Period:</strong> ${terms.notice_period || 'Not specified'}</p>
+                    <p><strong>Notice Period:</strong> ${escapeHtml(terms.notice_period || 'Not specified')}</p>
                     ${terms.conditions?.length ? `
                         <p><strong>Conditions:</strong></p>
                         <ul style="margin-left: 1.5rem;">
-                            ${terms.conditions.map(c => `<li>${c}</li>`).join('')}
+                            ${terms.conditions.map(c => `<li>${escapeHtml(c)}</li>`).join('')}
                         </ul>
                     ` : ''}
                     ${terms.consequences?.length ? `
                         <p><strong>Consequences:</strong></p>
                         <ul style="margin-left: 1.5rem;">
-                            ${terms.consequences.map(c => `<li>${c}</li>`).join('')}
+                            ${terms.consequences.map(c => `<li>${escapeHtml(c)}</li>`).join('')}
                         </ul>
                     ` : ''}
                 </div>
@@ -761,15 +774,15 @@ function renderLiabilityTerms(terms) {
             </h3>
             <div class="card">
                 <div class="card-body">
-                    <p><strong>Liability Cap:</strong> ${terms.liability_cap || 'Not specified'}</p>
+                    <p><strong>Liability Cap:</strong> ${escapeHtml(terms.liability_cap || 'Not specified')}</p>
                     ${terms.exclusions?.length ? `
                         <p><strong>Exclusions:</strong></p>
                         <ul style="margin-left: 1.5rem;">
-                            ${terms.exclusions.map(e => `<li>${e}</li>`).join('')}
+                            ${terms.exclusions.map(e => `<li>${escapeHtml(e)}</li>`).join('')}
                         </ul>
                     ` : ''}
                     ${terms.indemnification ? `
-                        <p><strong>Indemnification:</strong> ${terms.indemnification}</p>
+                        <p><strong>Indemnification:</strong> ${escapeHtml(terms.indemnification)}</p>
                     ` : ''}
                 </div>
             </div>
@@ -787,9 +800,9 @@ function renderDisputeResolution(terms) {
             </h3>
             <div class="card">
                 <div class="card-body">
-                    <p><strong>Method:</strong> ${terms.method || 'Not specified'}</p>
-                    <p><strong>Jurisdiction:</strong> ${terms.jurisdiction || 'Not specified'}</p>
-                    <p><strong>Venue:</strong> ${terms.venue || 'Not specified'}</p>
+                    <p><strong>Method:</strong> ${escapeHtml(terms.method || 'Not specified')}</p>
+                    <p><strong>Jurisdiction:</strong> ${escapeHtml(terms.jurisdiction || 'Not specified')}</p>
+                    <p><strong>Venue:</strong> ${escapeHtml(terms.venue || 'Not specified')}</p>
                 </div>
             </div>
         </div>
@@ -807,7 +820,7 @@ function renderLawyerQuestions(questions) {
             <div class="card">
                 <div class="card-body">
                     <ol style="margin-left: 1.5rem;">
-                        ${questions.map(q => `<li style="margin-bottom: 0.5rem;">${q}</li>`).join('')}
+                        ${questions.map(q => `<li style="margin-bottom: 0.5rem;">${escapeHtml(q)}</li>`).join('')}
                     </ol>
                 </div>
             </div>
@@ -828,14 +841,14 @@ function renderActionChecklist(checklist) {
                 <ul class="checklist">
                     ${checklist.map((item, index) => `
                         <li class="checklist-item">
-                            <div class="checklist-checkbox" onclick="toggleChecklistItem(this)"></div>
+                            <div class="checklist-checkbox" role="checkbox" tabindex="0" aria-checked="false" onclick="toggleChecklistItem(this)" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleChecklistItem(this);}"></div>
                             <div class="checklist-content">
-                                <div class="checklist-text">${item.action}</div>
+                                <div class="checklist-text">${escapeHtml(item.action)}</div>
                                 <div class="checklist-meta">
-                                    <span class="badge badge-${item.priority?.toLowerCase() === 'high' ? 'danger' : item.priority?.toLowerCase() === 'medium' ? 'warning' : 'neutral'}">${item.priority || 'LOW'}</span>
-                                    ${item.reason ? ` — ${item.reason}` : ''}
+                                    <span class="badge badge-${item.priority?.toLowerCase() === 'high' ? 'danger' : item.priority?.toLowerCase() === 'medium' ? 'warning' : 'neutral'}">${escapeHtml(item.priority || 'LOW')}</span>
+                                    ${item.reason ? ` — ${escapeHtml(item.reason)}` : ''}
                                 </div>
-                                ${item.source ? `<div class="trust-indicator-inline">Source: ${item.source}</div>` : ''}
+                                ${item.source ? `<div class="trust-indicator-inline">Source: ${escapeHtml(item.source)}</div>` : ''}
                             </div>
                         </li>
                     `).join('')}
@@ -910,8 +923,9 @@ function addChatMessage(content, role) {
     
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${role}`;
+    const avatar = role === 'user' ? 'You' : 'AI';
     messageDiv.innerHTML = `
-        <div class="chat-avatar">${role === 'user' ? 'You' : 'AI'}</div>
+        <div class="chat-avatar">${escapeHtml(avatar)}</div>
         <div class="chat-bubble">${content}</div>
     `;
     
@@ -920,20 +934,20 @@ function addChatMessage(content, role) {
 }
 
 function formatAnswer(answer) {
-    let html = `<p>${answer.answer || 'No answer available.'}</p>`;
+    let html = `<p>${escapeHtml(answer.answer || 'No answer available.')}</p>`;
     
     if (answer.sources && answer.sources.length > 0) {
         html += `<div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.2);">`;
         html += `<strong>Sources:</strong><ul style="margin-left: 1.5rem; margin-top: 0.5rem;">`;
         answer.sources.forEach(source => {
-            html += `<li>${source.section || 'Document'}${source.page ? ` (Page ${source.page})` : ''}</li>`;
+            html += `<li>${escapeHtml(source.section || 'Document')}${source.page ? ` (Page ${escapeHtml(String(source.page))})` : ''}</li>`;
         });
         html += `</ul></div>`;
     }
     
     if (answer.follow_up_questions && answer.follow_up_questions.length > 0) {
         html += `<div style="margin-top: 0.75rem; font-size: 0.875rem; opacity: 0.9;">`;
-        html += `<strong>Follow-up questions:</strong> ${answer.follow_up_questions.join(' • ')}`;
+        html += `<strong>Follow-up questions:</strong> ${answer.follow_up_questions.map(q => escapeHtml(q)).join(' • ')}`;
         html += `</div>`;
     }
     
@@ -958,7 +972,7 @@ function updateDocumentSelects(documents) {
     const selectB = document.getElementById('doc-b-select');
     
     const options = documents.map(doc => 
-        `<option value="${doc.document_id}">${doc.filename}</option>`
+        `<option value="${escapeHtml(doc.document_id)}">${escapeHtml(doc.filename)}</option>`
     ).join('');
     
     const defaultOption = '<option value="">Select a document...</option>';
@@ -1015,7 +1029,7 @@ function displayComparisonResults(comparison) {
             </h3>
             <div class="card">
                 <div class="card-body">
-                    <p style="white-space: pre-line;">${comparison.summary || 'No summary available.'}</p>
+                    <p style="white-space: pre-line;">${escapeHtml(comparison.summary || 'No summary available.')}</p>
                 </div>
             </div>
         </div>
@@ -1037,7 +1051,7 @@ function displayComparisonResults(comparison) {
                 <div class="card">
                     <div class="card-body">
                         <ul style="margin-left: 1.5rem;">
-                            ${comparison.recommendations.map(r => `<li>${r}</li>`).join('')}
+                            ${comparison.recommendations.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
                         </ul>
                     </div>
                 </div>
@@ -1072,11 +1086,11 @@ function renderKeyDifferences(differences) {
                         <tbody>
                             ${differences.map(d => `
                                 <tr>
-                                    <td><strong>${d.category || 'N/A'}</strong></td>
-                                    <td>${d.document_a || 'N/A'}</td>
-                                    <td>${d.document_b || 'N/A'}</td>
-                                    <td>${d.significance || 'N/A'}</td>
-                                    <td><span class="risk-badge risk-${d.risk_level?.toLowerCase() || 'low'}">${d.risk_level || 'LOW'}</span></td>
+                                    <td><strong>${escapeHtml(d.category || 'N/A')}</strong></td>
+                                    <td>${escapeHtml(d.document_a || 'N/A')}</td>
+                                    <td>${escapeHtml(d.document_b || 'N/A')}</td>
+                                    <td>${escapeHtml(d.significance || 'N/A')}</td>
+                                    <td><span class="risk-badge risk-${d.risk_level?.toLowerCase() || 'low'}">${escapeHtml(d.risk_level || 'LOW')}</span></td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1098,12 +1112,12 @@ function renderChangedClauses(clauses) {
             ${clauses.map(clause => `
                 <div class="clause-card">
                     <div class="clause-card-header">
-                        <div class="clause-card-title">${clause.clause_name}</div>
+                        <div class="clause-card-title">${escapeHtml(clause.clause_name)}</div>
                     </div>
                     <div class="clause-card-content">
-                        <p><strong>In Document A:</strong> ${clause.in_document_a}</p>
-                        <p><strong>In Document B:</strong> ${clause.in_document_b}</p>
-                        <p><strong>Impact:</strong> ${clause.impact}</p>
+                        <p><strong>In Document A:</strong> ${escapeHtml(clause.in_document_a)}</p>
+                        <p><strong>In Document B:</strong> ${escapeHtml(clause.in_document_b)}</p>
+                        <p><strong>Impact:</strong> ${escapeHtml(clause.impact)}</p>
                     </div>
                 </div>
             `).join('')}
@@ -1122,12 +1136,12 @@ function renderAddedClauses(clauses) {
             ${clauses.map(clause => `
                 <div class="clause-card" style="border-left: 3px solid var(--success-color);">
                     <div class="clause-card-header">
-                        <div class="clause-card-title">${clause.clause_name}</div>
+                        <div class="clause-card-title">${escapeHtml(clause.clause_name)}</div>
                         <span class="badge badge-success">New</span>
                     </div>
                     <div class="clause-card-content">
-                        <p>${clause.description}</p>
-                        <p><strong>Significance:</strong> ${clause.significance}</p>
+                        <p>${escapeHtml(clause.description)}</p>
+                        <p><strong>Significance:</strong> ${escapeHtml(clause.significance)}</p>
                     </div>
                 </div>
             `).join('')}
@@ -1146,12 +1160,12 @@ function renderRemovedClauses(clauses) {
             ${clauses.map(clause => `
                 <div class="clause-card" style="border-left: 3px solid var(--danger-color);">
                     <div class="clause-card-header">
-                        <div class="clause-card-title">${clause.clause_name}</div>
+                        <div class="clause-card-title">${escapeHtml(clause.clause_name)}</div>
                         <span class="badge badge-danger">Removed</span>
                     </div>
                     <div class="clause-card-content">
-                        <p>${clause.description}</p>
-                        <p><strong>Impact:</strong> ${clause.impact}</p>
+                        <p>${escapeHtml(clause.description)}</p>
+                        <p><strong>Impact:</strong> ${escapeHtml(clause.impact)}</p>
                     </div>
                 </div>
             `).join('')}
@@ -1165,24 +1179,24 @@ function renderComparisonSection(title, section) {
     return `
         <div class="analysis-section">
             <h3 class="analysis-section-title">
-                <span>📋</span> ${title} Comparison
+                <span>📋</span> ${escapeHtml(title)} Comparison
             </h3>
             <div class="card">
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                         <div>
                             <strong>Document A:</strong>
-                            <p style="margin-top: 0.5rem;">${section.document_a || 'Not specified'}</p>
+                            <p style="margin-top: 0.5rem;">${escapeHtml(section.document_a || 'Not specified')}</p>
                         </div>
                         <div>
                             <strong>Document B:</strong>
-                            <p style="margin-top: 0.5rem;">${section.document_b || 'Not specified'}</p>
+                            <p style="margin-top: 0.5rem;">${escapeHtml(section.document_b || 'Not specified')}</p>
                         </div>
                     </div>
                     ${section.differences ? `
                         <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
                             <strong>Key Differences:</strong>
-                            <p style="margin-top: 0.5rem;">${section.differences}</p>
+                            <p style="margin-top: 0.5rem;">${escapeHtml(section.differences)}</p>
                         </div>
                     ` : ''}
                 </div>
@@ -1239,14 +1253,14 @@ function displayClauseExplanation(explanation) {
             <div class="card-body">
                 <div class="mb-3">
                     <strong>Simple Explanation:</strong>
-                    <p style="margin-top: 0.5rem; white-space: pre-line;">${explanation.simple_explanation || 'No explanation available.'}</p>
+                    <p style="margin-top: 0.5rem; white-space: pre-line;">${escapeHtml(explanation.simple_explanation || 'No explanation available.')}</p>
                 </div>
                 
                 ${explanation.key_points?.length ? `
                     <div class="mb-3">
                         <strong>Key Points:</strong>
                         <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                            ${explanation.key_points.map(p => `<li>${p}</li>`).join('')}
+                            ${explanation.key_points.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
                         </ul>
                     </div>
                 ` : ''}
@@ -1255,7 +1269,7 @@ function displayClauseExplanation(explanation) {
                     <div class="mb-3">
                         <strong>Implications:</strong>
                         <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                            ${explanation.implications.map(i => `<li>${i}</li>`).join('')}
+                            ${explanation.implications.map(i => `<li>${escapeHtml(i)}</li>`).join('')}
                         </ul>
                     </div>
                 ` : ''}
@@ -1264,7 +1278,7 @@ function displayClauseExplanation(explanation) {
                     <div class="mb-3">
                         <strong>Potential Concerns:</strong>
                         <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                            ${explanation.potential_concerns.map(c => `<li>${c}</li>`).join('')}
+                            ${explanation.potential_concerns.map(c => `<li>${escapeHtml(c)}</li>`).join('')}
                         </ul>
                     </div>
                 ` : ''}
@@ -1273,7 +1287,7 @@ function displayClauseExplanation(explanation) {
                     <div>
                         <strong>Questions to Ask:</strong>
                         <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                            ${explanation.questions_to_ask.map(q => `<li>${q}</li>`).join('')}
+                            ${explanation.questions_to_ask.map(q => `<li>${escapeHtml(q)}</li>`).join('')}
                         </ul>
                     </div>
                 ` : ''}
@@ -1358,7 +1372,7 @@ async function handleCompareFileSelect(file, slot, infoId) {
                     <div class="file-info" style="margin: 0; padding: 0.75rem;">
                         <div class="file-icon" style="width: 36px; height: 36px; font-size: 1rem;">${getFileIcon(result.file_type)}</div>
                         <div class="file-details">
-                            <div class="file-name" style="font-size: 0.9rem;">${result.filename}</div>
+                            <div class="file-name" style="font-size: 0.9rem;">${escapeHtml(result.filename)}</div>
                             <div class="file-meta">${formatFileSize(result.file_size)}</div>
                         </div>
                         <span class="badge badge-success" style="font-size: 0.65rem;">Uploaded</span>
@@ -1450,8 +1464,8 @@ async function handleChatFileSelect(file) {
                     <div class="file-info" style="margin: 0;">
                         <div class="file-icon"><span class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span></div>
                         <div class="file-details">
-                            <div class="file-name">${result.filename}</div>
-                            <div class="file-meta">${result.file_type.toUpperCase()}</div>
+                            <div class="file-name">${escapeHtml(result.filename)}</div>
+                            <div class="file-meta">${escapeHtml(result.file_type.toUpperCase())}</div>
                         </div>
                     </div>
                 `;

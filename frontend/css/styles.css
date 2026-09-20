@@ -1,5 +1,24 @@
 /* LegalAssist AI - Dark Professional Design System */
 
+/* Skip Link for Accessibility */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--secondary-color);
+    color: white;
+    padding: 8px 16px;
+    z-index: 10000;
+    transition: top 0.2s;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 0 0 var(--radius-sm) 0;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
 /* CSS Variables */
 :root {
     /* Primary - Deep Dark */
@@ -1469,4 +1488,25 @@ select.form-control {
     width: 16px;
     height: 16px;
     color: var(--accent-color);
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus Visible for Keyboard Navigation */
+:focus-visible {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+/* Checklist Keyboard Support */
+.checklist-checkbox:focus-visible {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
 }
