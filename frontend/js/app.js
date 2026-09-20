@@ -349,6 +349,7 @@ function displayAnalysisResults(analysis) {
     const hasObligations = analysis.obligations && analysis.obligations.length > 0;
 
     resultsContainer.innerHTML = `
+        ${renderNextStepsSummary(analysis)}
         ${renderTrustBanner(analysis)}
         ${renderDocumentOverview(analysis)}
         ${renderExtractedFacts(analysis)}
@@ -363,6 +364,7 @@ function displayAnalysisResults(analysis) {
         ${hasDispute ? renderDisputeResolution(analysis.dispute_resolution) : ''}
         ${renderActionChecklist(analysis.action_checklist)}
         ${renderLawyerQuestions(analysis.lawyer_questions)}
+        ${renderExportOptions(analysis)}
     `;
 
     resultsContainer.classList.remove('hidden');
@@ -865,6 +867,136 @@ function toggleChecklistItem(element) {
     } else {
         element.innerHTML = '';
     }
+}
+
+function renderNextStepsSummary(analysis) {
+    const highRisks = (analysis.risks || []).filter(r => r.level === 'HIGH');
+    const highActions = (analysis.action_checklist || []).filter(a => a.priority === 'HIGH');
+    const missing = (analysis.missing_information || []).filter(m => m.importance === 'REQUIRED');
+    const questions = analysis.lawyer_questions || [];
+
+    let html = '<div class="analysis-section">';
+    html += '<h3 class="analysis-section-title"><span class="icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> Your Next Steps</h3>';
+    html += '<div class="card"><div class="card-body">';
+
+    html += '<p style="margin-bottom: 1rem; color: var(--text-secondary);">Based on our analysis, here is what you should focus on next:</p>';
+
+    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">';
+
+    if (highRisks.length > 0) {
+        html += `<div style="background: var(--danger-bg, #fef2f2); border-left: 3px solid var(--danger, #ef4444); padding: 1rem; border-radius: 0.5rem;">
+            <strong style="color: var(--danger, #ef4444);">Address ${highRisks.length} High-Risk Issue${highRisks.length > 1 ? 's' : ''}</strong>
+            <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">These require immediate attention before signing or proceeding.</p>
+        </div>`;
+    }
+
+    if (highActions.length > 0) {
+        html += `<div style="background: var(--warning-bg, #fffbeb); border-left: 3px solid var(--warning, #f59e0b); padding: 1rem; border-radius: 0.5rem;">
+            <strong style="color: var(--warning, #f59e0b);">Complete ${highActions.length} Priority Action${highActions.length > 1 ? 's' : ''}</strong>
+            <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">High-priority actions you should take based on this document.</p>
+        </div>`;
+    }
+
+    if (missing.length > 0) {
+        html += `<div style="background: var(--info-bg, #eff6ff); border-left: 3px solid var(--info, #3b82f6); padding: 1rem; border-radius: 0.5rem;">
+            <strong style="color: var(--info, #3b82f6);">Clarify ${missing.length} Missing Item${missing.length > 1 ? 's' : ''}</strong>
+            <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">Important information not found in the document — ask about these.</p>
+        </div>`;
+    }
+
+    if (questions.length > 0) {
+        html += `<div style="background: var(--success-bg, #f0fdf4); border-left: 3px solid var(--success, #22c55e); padding: 1rem; border-radius: 0.5rem;">
+            <strong style="color: var(--success, #22c55e);">Prepare ${questions.length} Question${questions.length > 1 ? 's' : ''} for a Lawyer</strong>
+            <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">Use these when consulting a legal professional for personalized advice.</p>
+        </div>`;
+    }
+
+    if (highRisks.length === 0 && highActions.length === 0 && missing.length === 0) {
+        html += `<div style="background: var(--success-bg, #f0fdf4); border-left: 3px solid var(--success, #22c55e); padding: 1rem; border-radius: 0.5rem;">
+            <strong style="color: var(--success, #22c55e);">No Critical Issues Found</strong>
+            <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">Review the detailed analysis below and consider the suggested actions.</p>
+        </div>`;
+    }
+
+    html += '</div></div></div></div>';
+    return html;
+}
+
+function renderExportOptions(analysis) {
+    return `
+        <div class="analysis-section">
+            <h3 class="analysis-section-title">
+                <span class="icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+                Export & Share
+            </h3>
+            <div class="card">
+                <div class="card-body" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button onclick="exportAsText()" class="btn btn-secondary">
+                        <span class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
+                        Copy as Text
+                    </button>
+                    <button onclick="window.print()" class="btn btn-secondary">
+                        <span class="icon"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>
+                        Print Report
+                    </button>
+                    <button onclick="downloadReport()" class="btn btn-primary">
+                        <span class="icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+                        Download Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function exportAsText() {
+    const a = state.analysisResults;
+    if (!a) return;
+    let text = `LegalAssist AI - Document Analysis Report\n${'='.repeat(45)}\n\n`;
+    text += `Document Type: ${a.document_type || 'Unknown'}\n`;
+    text += `Summary: ${a.summary || 'N/A'}\n\n`;
+    if (a.risks && a.risks.length) {
+        text += `RISKS:\n`;
+        a.risks.forEach((r, i) => { text += `  ${i+1}. [${r.level}] ${r.title}: ${r.explanation}\n`; });
+    }
+    if (a.action_checklist && a.action_checklist.length) {
+        text += `\nACTION ITEMS:\n`;
+        a.action_checklist.forEach((a, i) => { text += `  ${i+1}. [${a.priority}] ${a.action}\n`; });
+    }
+    if (a.lawyer_questions && a.lawyer_questions.length) {
+        text += `\nQUESTIONS FOR A LAWYER:\n`;
+        a.lawyer_questions.forEach((q, i) => { text += `  ${i+1}. ${q}\n`; });
+    }
+    navigator.clipboard.writeText(text).then(() => showAlert('Report copied to clipboard!', 'success'));
+}
+
+function downloadReport() {
+    const a = state.analysisResults;
+    if (!a) return;
+    let text = `LegalAssist AI - Document Analysis Report\nGenerated: ${new Date().toLocaleDateString()}\n${'='.repeat(50)}\n\n`;
+    text += `DOCUMENT TYPE: ${a.document_type || 'Unknown'}\n\n`;
+    text += `SUMMARY:\n${a.summary || 'N/A'}\n\n`;
+    if (a.risks && a.risks.length) {
+        text += `RISKS:\n${'-'.repeat(20)}\n`;
+        a.risks.forEach((r, i) => { text += `${i+1}. [${r.level}] ${r.title}\n   ${r.explanation}\n   Action: ${r.suggested_action}\n\n`; });
+    }
+    if (a.action_checklist && a.action_checklist.length) {
+        text += `ACTION ITEMS:\n${'-'.repeat(20)}\n`;
+        a.action_checklist.forEach((item, i) => { text += `${i+1}. [${item.priority}] ${item.action}\n   Reason: ${item.reason}\n\n`; });
+    }
+    if (a.lawyer_questions && a.lawyer_questions.length) {
+        text += `QUESTIONS FOR A LAWYER:\n${'-'.repeat(20)}\n`;
+        a.lawyer_questions.forEach((q, i) => { text += `${i+1}. ${q}\n`; });
+    }
+    text += `\n${'='.repeat(50)}\nGenerated by LegalAssist AI - For informational purposes only.\n`;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `legal-analysis-${Date.now()}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showAlert('Report downloaded!', 'success');
 }
 
 // ============================================
