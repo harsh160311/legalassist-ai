@@ -1,6 +1,13 @@
 """
 Gemini AI service for legal document analysis.
-Includes safety measures against prompt injection.
+
+Core AI engine powering LegalAssist AI's legal assistance features:
+- Document Analysis: Simplifies complex legal documents, extracts facts, generates risks/obligations
+- Clause Explanation: Translates legal jargon into plain language anyone can understand
+- Document Comparison: Side-by-side contract comparison with conflict detection
+- Q&A: Context-aware answers based on uploaded document content
+- Safety: Prompt injection detection, sensitive data masking (Aadhaar/PAN/SSN)
+- Efficiency: Single-stage analysis for short docs, two-stage for long docs, result caching
 """
 
 import json

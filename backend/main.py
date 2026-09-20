@@ -1,6 +1,19 @@
 """
 LegalAssist AI - Main FastAPI Application
-AI-powered legal document analysis and assistance
+
+AI-powered legal document analysis and assistance platform that makes legal
+information accessible and understandable for everyone. Built for the
+Hack2Skill PromptWars hackathon under the "AI for Legal Assistance & Access" vertical.
+
+Features:
+- Document upload and text extraction (PDF/DOCX/TXT + AcroForm fields)
+- Two-stage AI analysis: fact extraction + legal analysis in plain language
+- Interactive Q&A chatbot for document questions
+- Clause-by-clause explanation in simple language
+- Side-by-side document comparison with conflict detection
+- Actionable next steps, checklists, and lawyer preparation questions
+- Sensitive data masking (Aadhaar, PAN, SSN), prompt injection protection
+- Rate limiting, security headers, CORS lockdown, auto-cleanup
 """
 
 import logging

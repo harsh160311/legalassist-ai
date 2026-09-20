@@ -1,5 +1,14 @@
 """
 Document upload and analysis routes.
+
+Handles the core legal document analysis workflow:
+- Upload: Accepts PDF/DOCX/TXT, extracts text (including AcroForm fields)
+- Analyze: Two-stage AI pipeline extracts facts + generates legal analysis
+  - Simplifies complex legal documents into plain language
+  - Highlights important clauses, obligations, risks, and inconsistencies
+  - Generates actionable next steps and lawyer preparation questions
+- Retrieve: Get document info, extracted text, and stored analysis
+- Delete: Remove document and associated files (auto-cleanup after 10 minutes)
 """
 
 import os

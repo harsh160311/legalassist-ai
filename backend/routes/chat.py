@@ -1,5 +1,11 @@
 """
 Document Q&A and clause explanation routes.
+
+Implements interactive legal assistance features:
+- Ask questions about uploaded documents (context-aware answers from document content)
+- Explain legal clauses in plain language (simplifies complex legal jargon)
+- Follow-up question suggestions for deeper understanding
+- Helps users prepare information and questions for a legal professional
 """
 
 from datetime import datetime

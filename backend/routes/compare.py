@@ -1,5 +1,12 @@
 """
 Document comparison routes.
+
+Compares two legal documents side-by-side:
+- Identifies key differences in clauses, terms, and obligations
+- Highlights added/removed clauses between versions
+- Compares payment terms, termination conditions, liability, and jurisdiction
+- Generates risk-level assessments for each difference
+- Helps users understand contract changes before signing
 """
 
 from datetime import datetime
