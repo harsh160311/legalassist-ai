@@ -106,7 +106,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.requests.setdefault(client_ip, []).append(now)
         return await call_next(request)
 
-app.add_middleware(RateLimitMiddleware, max_requests=30, window_seconds=60)
+app.add_middleware(RateLimitMiddleware, max_requests=100, window_seconds=60)
 
 # No-cache middleware for static files
 class NoCacheMiddleware(BaseHTTPMiddleware):
